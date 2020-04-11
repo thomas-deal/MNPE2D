@@ -1,0 +1,13 @@
+Name of source data input file  :pesrc.inp
+Name of ssp data input file     :pessp.inp
+Name of surface spectrum file   :pesurf.inp
+Name of bottom bathy data file  :pebath.inp
+Name of bottom properties file  :pebotprop.inp
+Name of deep bottom bathy file  :pedbath.inp
+Name of deep bottom props file  :pedbotprop.inp
+Name of pressure data file      :press.bin
+Name of velocity_r data file    :apvr.bin
+Name of velocity_z data file    :apvz.bin
+nzout, depmin[m], depmax[m]     :500 0.000000 200.000000
+nrout, rngmin[km], rngmax[km]   :2000 0.000000 5.000000
+nz, dr[km], depcalc[m], c0[m/s] :0 0.0 1200.00 1485.000000

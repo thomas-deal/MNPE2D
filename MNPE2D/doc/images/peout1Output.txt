@@ -1,0 +1,8 @@
+press.bin
+ 
+This file contains scalar pressure data with the following parameters:
+   frequency = 60 Hz for a source at depth 50 meters
+   single radial
+   85 points in depth from 1.1719 m to 198.0469 m
+   203 points in range from 0 km to 5 km
+ 

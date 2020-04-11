@@ -1,0 +1,47 @@
+\section{Building MNPE}
+
+MNPE is distributed as FORTRAN source code and must be compiled into an executable. The source files are listed in Table~\ref{tab:sourcecode}. In addition to the Fortran source code (*.f), there are two Matlab scripts (*.m) for reading the binary output files. MNPE can be built in Windows, MacOS, or Linux with an appropriate compiler, such as the Intel Fortran Compiler \url{https://software.intel.com/en-us/fortran-compilers} or the GNU Fortran Compiler \url{https://gcc.gnu.org/fortran}. The details of installing and configuring a Fortran development environment are beyond the scope of this document.
+
+\begin{table}[!ht]
+	\begin{center}
+		\caption{MNPE source code}
+		\label{tab:sourcecode}
+		\begin{tabular}{c|l}
+			\textbf{File} & \textbf{Function} \\
+			\hline
+			\texttt{Pemp2dbb.f} & Main program \\
+    		\texttt{Envprop1.f} & Environment propagator \\
+    		\texttt{phsprop.f} & Phase propagator \\
+    		\texttt{pesrc.f} & Source generator \\
+    		\texttt{Zsgen.f} & Ocean surface generator \\
+    		\texttt{fft.f} & Fast Fourier Transform \\
+    		\texttt{ssi.f} & Interpolation \\
+    		\texttt{peout1.m} & Binary file header reader \\
+    		\texttt{peout2.m} & Binary file data reader \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Once the development environment is configured, MNPE can be built from the command line as follows:
+
+\begin{table}[!ht]
+	\begin{center}
+		\caption{Example build commands}
+		\label{tab:typeenum}
+		\begin{tabular}{c|c|l} 
+			\textbf{Platform} & \textbf{Compiler} & \textbf{Command}\\
+			\hline
+			\multirow{2}{*}{Windows} & Intel & \texttt{ifort *.f /exe:MNPE2D.exe} \\
+			& GNU & \texttt{gfortran *.f -o MNPE2D.exe} \\
+			\multirow{2}{*}{MacOS/Linux} & Intel &  \texttt{ifort *.f -o MNPE2D}\\
+			& GNU & \texttt{gfortran *.f -o MNPE2D} \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Alternatively, the user can install CMake \url{https://cmake.org} and use the following \texttt{CMakeLists.txt} file to generate a platform-specific makefile.
+
+\newpage
+\lstinputlisting[caption={\texttt{CMakeLists.txt}}]{../../src/CMakeLists.txt}
+
+The executable has no external dependencies and can be run from any directory. The user may want to run the executable from a single location and add that location to their system's \texttt{PATH} variable. Alternatively, the executable can be copied into multiple working directories and run locally in each one.

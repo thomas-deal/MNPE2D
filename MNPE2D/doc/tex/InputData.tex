@@ -1,0 +1,95 @@
+\section{Description of Input Data}
+
+MNPE reads input data for each run from 8 plain text files. These files must all be in the same directory as each other, but do not need to be in the same directory as the MNPE executable, as long as the executable is on the system \texttt{PATH}. A detailed description of these files follows. Note that when entering numeric values in these files, floating point values must always include a decimal point, even if they are whole numbers. Fortran automatically interprets numbers without a decimal point as integers.
+
+\subsection{Main input file}
+
+The main input file must be named \texttt{pefiles.inp}. All other input files are specified in this file. The placement of the input data in this file MUST follow the ``:'' character in its current position. 
+
+\lstinputlisting[caption={\texttt{pefiles.inp}},label={lst:pefiles}]{../../examples/Monopole/pefiles.inp}
+
+The first several inputs simply define the names of the other input files and are self-explanatory. Note that the output data files (pressure, velocity\_r, velocity\_z) will be binary files and will overwrite any other files by those names. The following line, e.g.
+\lstinputlisting[firstline=11,lastline=11,frame=none]{../../examples/Monopole/pefiles.inp}
+specifies the ``requested'' number of points in depth, minimum depth [m], and maximum depth [m] to output. The program will try to come as close to this request as possible. Similarly, the next line, e.g.
+\lstinputlisting[firstline=12,lastline=12,frame=none]{../../examples/Monopole/pefiles.inp}
+specifies the ``requested'' number of points in range, minimum range [km], and maximum range [km] to output. The program will try to come as close to this request as possible. The final line in this file, e.g.
+\lstinputlisting[firstline=13,lastline=13,frame=none]{../../examples/Monopole/pefiles.inp}
+is designed to allow flexibility. These numbers represent the vertical FFT size (INTEGER multiple of 2), the range step [km], the maximum depth of calculation [m], and the reference sound speed [m/s]. All of these numbers can be set to 0 and default values will be chosen based on the other input data. The only exception to this is c0 which will always be chosen as 1500 m/s unless otherwise stated. Note that the default values for range step and FFT size are chosen to produce the most accurate result, not the most efficient. You may find adequate accuracy with larger range steps or smaller FFT sizes which would speed up your run times (important for very high frequency or very broadband calculations).
+
+\subsection{Source data}
+
+All of the source information is contained in the file \texttt{pesrc.inp}. Again, the format of this file must be maintained insomuch as the actual values must follow the ``:'' character in its current position. The description preceding each value makes this file mostly self-explanatory. 
+
+\lstinputlisting[caption={\texttt{pesrc.inp}}]{../../examples/Monopole/pesrc.inp}
+
+Note that four source types are available - a vertical line array (approximated by a continuous line array) and three wide-angle sources that approximate a monopole, horizontal dipole, and vertical dipole point source. If a positive array length is specified, a simple line array is modeled by a sinc function. The D/E angle is then used to steer the main beam of the array, positive angles steering the beam downward, positive angles steering the beam upward. The different point sources are identified by zero or negative values, as shown in Table~\ref{tab:sourcetypes}. Since this is a 2D version of MNPE, the horizontal dipole is aligned in the radial direction. When a point source is specified, the D/E angle input is ignored. All numbers in this file are FLOATS with the exception of the last value, the number of frequencies (must be a power of two), which must be an integer.
+
+\begin{table}[!ht]
+	\begin{center}
+		\caption{Array length codes for monopole and dipole point sources}
+		\label{tab:sourcetypes}
+		\begin{tabular}{d{1}|l} 
+			\textbf{Value} & \multicolumn{1}{c}{\textbf{Description}}\\
+			\hline
+			>0.0 & Vertical Uniform Linear Array \\
+			0.0 & Monopole Source \\
+			-1.0 & Horizontal Dipole Source \\
+			-2.0 & Vertical Dipole Source \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Additional details on the implementation of the two dipole source types in MNPE can be found in Appendix~\ref{app:dipolesource}.
+
+\subsection{Sound speed profile data}
+
+The sound speed profile data is contained in \texttt{pessp.inp}. It has the ability to hold multiple profiles taken at multiple ranges and defined as a function of depth. The first line contains a single Boolean value (0 or 1) to define whether or not water volume attenuation should be used (no or yes). The second line contains a single number indicating the number (INTEGER) of sound speed profiles contained in the first radial. The following line contains two numbers indicating the range [km] (FLOAT) of the current profile and the number (INTEGER) of sound speed values in depth at this range. Finally, the profile itself is defined by a pair of numbers (FLOATS) stating the depth [m] and sound speed [m/s] of the sound speed profile. For isovelocity profiles, only a single data pair (depth, sound speed) is required at each range.
+
+\lstinputlisting[caption={\texttt{pessp.inp}}]{../../examples/Monopole/pessp.inp}
+
+\subsection{Rough ocean surface data}\label{sec:roughsurface}
+
+Rough ocean surface data is contained in \texttt{pesurf.inp}. The first line has a single number (INTEGER) that specifies the surface spectrum type, as shown in Table~\ref{tab:surfaces}. 
+
+\begin{table}[!ht]
+	\begin{center}
+		\caption{Surface spectrum type enumerations}
+		\label{tab:surfaces}
+		\begin{tabular}{c|l} 
+			\textbf{Value} & \textbf{Description}\\
+			\hline
+			0 & Flat Surface \\
+			1 & RMS Roughness and Correlation Length \\
+			2 & Pierson-Moskowitz \\
+			3 & JONSWAP \\
+			4 & User-Defined \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+The second line contains a single number (FLOAT) that is the tide height [m] referenced to the mean lower low water level (MLLW). This number is measured positive up, as is reported by tide gauges. If a flat surface is selected, there is no additional information in the file. For all other spectrum types, the third line in the file has three numbers (INTEGER followed by a FLOAT and another INTEGER). The first number is used to set the random seed. Each seed produces a repeatable random number sequence, so this parameter should be varied if a different surface realization is desired each time MNPE runs. The second number is the time in seconds since the initial surface realization. When the goal is to compute many different realizations and average the result, the seed should be changed for each run and the time should be held constant. When the goal is to evolve a surface over time, the seed should be held constant for each run and the time should be varied. The third number sets the wave propagation direction. For waves arriving from the $+r$ direction (going toward the source at $r=0$), enter a positive value, and for waves arriving from the $-r$ direction (going away from the source at $r=0$), enter a negative value. For standing waves, enter 0.
+
+The following lines are different for the different spectrum types. For the Pierson-Moskowitz spectrum\cite{PM}, line four contains a single number (FLOAT) equal to the wind speed [m/s] at a height of 19.5 meters above the sea surface. For the JONSWAP spectrum\cite{JONSWAP}, line four contains two numbers (FLOATS). The first is the wind speed [m/s] at a height of 10 meters above the sea surface, and the second is the fetch [m]. Finally, for the user-defined spectrum, the fourth line contains a single number (INTEGER) indicating the number of points $N_{SPEC}$ in the user-specified spectrum. ZSGEN will then read the following $N_{SPEC}$ lines from the file, with each line containing two numbers (FLOATS): the frequency [Hz] and the spectral density [m$^2$/Hz]. These frequency/spectrum pairs are for a single-sided magnitude spectrum, so all frequencies and spectral densities are positive. The frequency sampling interval does not need to be constant, because these values are resampled internally by ZSGEN to match the realization length and FFT size. Example surface spectrum files are included with the source code. An example using the JONSWAP spectrum is shown below.
+
+\newpage
+\lstinputlisting[caption={\texttt{pesurf.inp}}]{../../examples/RoughSurface/pesurfjonswap.inp}
+
+Additional details on acquiring measured surface wave spectra and the implementation of user-defined rough ocean surfaces in MNPE are contained in Appendix~\ref{app:roughsurface}.
+
+\subsection{Bathymetry and bottom properties data}
+
+The bathymetry at the water/bottom interface is contained in \texttt{pebath.inp}. The first line contains the number (INTEGER) of bathymetry points defined. This is then followed by the bathymetry defined by pairs of numbers (FLOATS) stating the range [km] and depth [m] or the bathymetry point. The range points in the bathymetry file are not required to coincide with range points in the sound speed profile file. For flat bottoms, only a single data pair (range, depth) is required.
+
+\lstinputlisting[caption={\texttt{pebath.inp}}]{../../examples/Monopole/pebath.inp}
+
+This acoustic parameters of the medium just below the water/bottom interface are contained in \texttt{pebotprop.inp}. Note that bottom properties are not depth dependent (with the exception of the sound speed which can have a constant gradient) but can be range-dependent. This range dependency can be entirely independent of the bathymetry. In other words, the ranges specifying changes in the bottom properties do no have to coincide with the ranges specifying changes in the bathymetry. Therefore, the first line contains the number (INTEGER) of different range points at which the bottom properties are defined. This is then followed by that many lines, each line containing seven numbers (FLOATS): range [km] where these values apply, sound speed [m/s], sound speed gradient [1/s], density [g/cm$^3$], compressional attenuation [dB/m/kHz], shear speed [m/s], and shear attenuation [dB/m/kHz].
+
+\lstinputlisting[caption={\texttt{pebotprop.inp}}]{../../examples/Monopole/pebotprop.inp}
+
+\subsection{Deep bathymetry and bottom properties data}
+
+The data for a second, ``deep,'' bathymetry layer below the water/sediment interface is contained in \texttt{pedbath.inp}. The bathymetry values are measured relative from the sea surface. Therefore, an extremely deep bathymetry value (deeper than the computational depth) will not even be used whereas a bathymetry value shallower than the water/bottom depth will supercede the upper layer and become the water/bottom depth (e.g., as would occur for a rock outcrop in a sediment pool). This file has the same format as the upper layer bathymetry file, \texttt{pebath.inp}. The acoustic parameters of the deep bathymetry layer are contained in \texttt{pedbotprop.inp}. Its format is identical to the format of the bottom properties file described above. Examples of these two files are listed below.
+
+\lstinputlisting[caption={\texttt{pedbath.inp}}]{../../examples/Monopole/pedbath.inp}
+
+\lstinputlisting[caption={\texttt{pedbotprop.inp}},label={lst:pedbotprop}]{../../examples/Monopole/pedbotprop.inp}

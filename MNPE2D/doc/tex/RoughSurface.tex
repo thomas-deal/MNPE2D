@@ -1,0 +1,117 @@
+\section{1D Rough Ocean Surface Modeling in MNPE}\label{app:roughsurface}
+
+\subsection{Obtaining real-time surface wave spectra}
+
+The National Data Buoy Center (NDBC - \url{http://www.ndbc.noaa.gov}) provides online access to data from a variety of data collecting buoys and coastal stations, including waverider buoys that record wave height. One example is Station 46239 located approximately 10 nautical miles west of the Point Sur Lighthouse at $36^\circ 20'28''$ N, $122^\circ 6'6''$ W in 369 meters of water. This is a Datawell directional buoy Mark 3 operated by Scripps Institution of Oceanography.
+
+The NDBC site provides real-time spectral summary data and raw spectral data recorded at 30-minute intervals for the previous 45 days. The summary data includes calculations of significant wave height, period, and direction. It also provides these calculations separately for swell and wind-driven waves by partitioning the spectra into low- and high-frequency regions. This summary data can be used to calculate an equivalent Pierson-Moskowitz\cite{PM} or JONSWAP\cite{JONSWAP} spectrum by relating sea state and wind speed to significant wave height with empirical formulas\cite{Hodges}.
+
+The raw spectral data provides a higher resolution alternative to these empirical spectra formulas. This data is also reported at 30-minute intervals for the last 45 hours and consists of wave spectral energy density $S(f)$ in m$^2$/Hz versus frequency $f$. The frequency vector is not uniformly sampled but instead uses 5 mHz sampling from 25 mHz to 100 mHz and 10 mHz sampling from 110 mHz to 580 mHz.
+
+Both the summary and raw spectra files can be retrieved from the NDBC website via http access and saved as delimited text files. This raw data can be copied directly into \texttt{pesurf.inp} without further processing, as described in Section~\ref{sec:roughsurface}. The next section describes how MNPE generates a realization of a rough surface with the same statistical parameters as the requested surface spectrum.
+
+\newpage
+\subsection{Generating wave surface realizations}
+
+Once a wave energy density spectrum has been obtained, some care must be taken when using it to generate a realization of a sea surface to account for energy conservation and to avoid sampling issues\cite{Mobley}. This section describes those steps, which are the same for Pierson-Moskowitz, JONSWAP, and user-defined spectra.
+
+\subsubsection{Domain size and sampling}
+
+The first task is to determine the required domain size $L$ and sampling $dx$. These parameters are linked to the number of samples used to compute the spatial FFT, $N_{FFT}$, but there is some flexibility in choosing them. The goal is to have a surface height defined on every range grid used by MNPE up to the maximum computation range. Therefore, a natural choice is to let $dx$ equal the range sampling and $L$ equal the maximum range. In this case, $N_{FFT}=L/dx$ is not guaranteed to be an even power of 2, which could be a problem for the FFT routine already in MNPE. The solution is to zero-pad the spectrum such that $N_{FFT}$ equals the next power of 2 greater than $L/dx$. If the surface realization is to be computed outside MNPE, FFT implementations such as that found in Matlab automatically handle any value for $N_{FFT}$.
+
+An alternative option is to set a fixed power of two for $N_{FFT}$ and $dx$ and generate a wave profile up to range $L=N_{FFT}*dx$. If $L$ is greater than the maximum computational range, the profile can be truncated. If $L$ is less than the maximum computational range, the profile can be repeated every $L$ meters. Since it will be produced by Fourier synthesis there will be no discontinuities at the boundaries.
+
+Whatever method is used to choose the spatial sampling parameters, they must be checked against the wavenumber sampling to ensure there is sufficient resolution in the wavenumber domain to capture the spectrum characteristics. The wavenumber sampling interval $dk=2\pi/L$, so $L$ must be chosen large enough that $dk$ adequately samples the wave spectrum.
+
+\subsubsection{Conversion to spatial spectrum}
+
+Once sampling has been determined, we need to convert the spectrum to the wavenumber domain. The Pierson-Moskowitz and JONSWAP spectra are stated in terms of radial frequency $\omega=2\pi f$, and the spectra recorded by NDBC are stated in terms of frequency $f$, but to generate a spatial wave profile we need the magnitude spectrum stated in terms of spatial frequency or wavenumber $k$. The conversion from frequency to wavenumber takes the form
+\begin{equation}
+S(k) = S(f)\frac{\partial f}{\partial k}.\label{eq:Sconvert}
+\end{equation}
+
+The relationship between frequency and wavenumber for surface gravity waves depends on the dispersion relationship\cite{Hodges}
+\begin{equation}
+f(k,H) = \frac{1}{2\pi}\sqrt{gk\tanh(kH)},\label{eq:Dispersion}
+\end{equation}
+where $g$ is the gravitational acceleration constant and $H$ is the water depth. This equation is often simplified into a ``deep-water'' version for $kH\gg 1$,
+\begin{equation}
+f(k) = \frac{1}{2\pi}\sqrt{gk},
+\end{equation}
+which is non-dispersive and a ``shallow-water'' version for $kH\ll 1$, 
+\begin{equation}
+f(k,H) = \frac{k}{2\pi}\sqrt{gH},
+\end{equation}
+which is dispersive. We will use the full equation for maximum flexibility in shallow, deep, and intermediate water depths. The derivative required for \eqnname~(\ref{eq:Sconvert}) is
+\begin{equation}
+\frac{\partial f(k,H)}{\partial k} = \frac{g\tanh(kH) + gkH\sech^2(kH)}{4\pi\sqrt{gk\tanh(kH)}}.
+\end{equation}
+
+Since the NDBC data is sampled with nonuniform frequency spacing, we must resample the spectrum over the uniformly-spaced vector
+\begin{equation}
+k_+ = \left[0, dk, 2dk, \ldots, \left(\frac{N_{FFT}}{2}-1\right)dk\right].
+\end{equation}
+This gives us a real-valued, one-sided energy density spectrum $S(k_+)$ that we must convert into a real-valued vector of wave heights.
+
+\subsubsection{Fourier synthesis}
+
+The one-sided energy density spectrum of a waveform $\eta(r)$ is related to the magnitude squared of its Fourier transform,
+\begin{eqnarray}
+\hat{\eta}(k) & = & \mathcal{F}\{\eta(r)\}, \\
+S(k_+) & = & 2\frac{\vert\hat{\eta}(k)\vert^2}{dk}; k\geq 0,
+\end{eqnarray}
+where the factor of 2 accounts for half of the energy mapping to negative wavenumbers. A real-valued $\eta(r)$ will produce a two-sided, Hermitian $\hat{\eta}(k)$ Fourier transform, so we need to convert $S(k_+)$ to this format to invert this relationship. 
+
+To get the Fourier transform magnitude, $\hat{\eta}_M(k_+)$, we multiply by the wavenumber spacing $dk$ to get the total variance in each interval, divide by 2, and take the square root,
+\begin{equation}
+\hat{\eta}_M(k_+) = \sqrt{\frac{S(k_+)dk}{2}}.
+\end{equation}
+Since the phase information is lost when recording the average spectrum magnitude, this is where we re-introduce it using random numbers. We generate two vectors of length $N_{FFT}/2$ of random variables drawn from the Normal distribution with zero mean and unit variance, $a_r(k_+)$ and $a_i(k_+)$. These are combined and normalized to form a vector of complex numbers,
+\begin{equation}
+\hat{\eta}_\phi(k_+) = \frac{1}{\sqrt{2}}\left(a_r(k_+)+ia_i(k_+)\right).
+\end{equation} 
+We then multiply these two vectors to get the complex transform over positive wavenumbers,
+\begin{equation}
+\hat{\eta}(k_+) = \hat{\eta}_M(k_+) \hat{\eta}_\phi(k_+),
+\end{equation}
+from which we get the Hermitian, two-sided transform defined as
+\begin{equation}
+\hat{\eta}(k) = 
+\begin{cases}
+\hat{\eta}(k_+); & k\ge 0, \\
+\hat{\eta}^*(-k_+); & k< 0. \\
+\end{cases}\label{eq:Hermitian}
+\end{equation}
+This operation calls for careful bookkeeping due to the FFT frequency order. The two-sided transform is defined over the vector of wavenumbers
+\begin{multline}
+k = \left[0, dk, 2dk, \ldots, \left(\frac{N_{FFT}}{2}-1\right)dk,\right. \\
+\left.-\left(\frac{N_{FFT}}{2}\right)dk, \ldots, -2dk, -dk\right].
+\end{multline}
+To follow FFT conventions, we must account for the special values $\hat{\eta}(0)$, which is the average value (in our case 0 for undisturbed ocean surface), and the Nyquist value $\hat{\eta}(N_{FFT}/2)$, which must be real-valued (in our case we can also set this value to 0).
+
+Finally, we compute the surface profile by taking the inverse Fourier transform,
+\begin{equation}
+\eta(r) = \mathcal{F}^{-1}\{\hat{\eta}(k)\}.
+\end{equation}
+This produces a real-valued $\eta(r)$ defined from range $0$ to $L$ when the Hermitian symmetry is correctly enforced. Note that when using Matlab, the FFT function must be used in this step due to its sign convention for the complex exponential.
+
+\subsubsection{Time-dependence}
+
+To this point, all the calculations are done for a single instant in time. If we want to observe how a particular spectrum realization evolves over time, we must introduce a time-dependent component to the calculation. The time evolution for a monochromatic wave propagating in the $+r$ direction with wavenumber $k$ is $e^{j(kr-\omega{t})}$. Since we have a vector of complex numbers at time $t=0$ for positive wavenumbers $k_+$, we can add time dependence by multiplying each element in that vector by $e^{-j\omega{t}}$. \equationname(~\ref{eq:Hermitian}) then becomes 
+\begin{equation}
+\hat{\eta}(k,t) = 
+\begin{cases}
+\hat{\eta}(k_+)e^{-j\omega(k_+)t}; & k\ge 0, \\
+\hat{\eta}^*(-k_+)e^{j\omega(k_+)t}; & k< 0, \\
+\end{cases}\label{eq:HermitianTime}
+\end{equation}
+where the dispersion relationship from \eqnname~(\ref{eq:Dispersion}) is used to calculate the circular frequency $\omega$ for each wavenumber. 
+
+\subsubsection{Surface derivatives}
+
+The field transformation technique\cite{Tappert} for surface roughness scattering in MNPE also requires the first and second derivatives of the surface profile. Since we begin with the two-sided complex transform defined in the wavenumber domain, each differentiation can be done by multiplication of $jk$. Then the first and second derivatives are
+\begin{eqnarray}
+\frac{d\eta(r)}{dr} & = & \mathcal{F}^{-1}\{jk\hat{\eta}(k)\}, \\
+\frac{d^2\eta(r)}{dr^2} & = & \mathcal{F}^{-1}\{-k^2\hat{\eta}(k)\}.
+\end{eqnarray}
+These derivatives are calculated after time-dependence is added but before the inverse Fourier transform is taken. With these values computed, we now have everything we need to implement the arbitrary surface wave energy density spectrum in MNPE.

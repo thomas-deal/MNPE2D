@@ -1,0 +1,29 @@
+ You have chosen to use default sampling in depth.
+  
+ Enter 1 for accuracy, 2 for efficiency:
+ Range sampling will be based on accuracy.
+  
+  
+ FREQ=   60.0000000     Hz
+  
+  Range =       0.0000
+  Range =       0.2475
+  Range =       0.4950
+  Range =       0.7425
+  Range =       0.9900
+  Range =       1.2375
+  Range =       1.4850
+  Range =       1.7325
+  Range =       1.9800
+  Range =       2.2275
+  Range =       2.4750
+  Range =       2.7225
+  Range =       2.9700
+  Range =       3.2175
+  Range =       3.4650
+  Range =       3.7125
+  Range =       3.9600
+  Range =       4.2075
+  Range =       4.4550
+  Range =       4.7025
+  Range =       4.9500

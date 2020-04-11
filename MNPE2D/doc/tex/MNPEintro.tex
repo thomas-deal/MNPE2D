@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{bm}
+\usepackage{dcolumn}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{authblk}
+
+\graphicspath{{../images/}}
+\DeclareGraphicsExtensions{.eps,.png}
+\DeclareMathOperator{\sech}{sech}
+\newcolumntype{d}[1]{D{.}{.}{#1} }
+\lstset{
+	basicstyle=\footnotesize\ttfamily,
+	frame=single,
+	columns=fixed,
+	breaklines=true
+}
+
+\graphicspath{{../images/}}
+\renewcommand{\figurename}{Figure}
+\newcommand{\figurenames}{Figures}
+%\newcommand{\figname}{Figure}
+%\newcommand{\fignames}{Figures}
+\newcommand{\figname}{Fig.}
+\newcommand{\fignames}{Figs.}
+\newcommand{\equationname}{Equation}
+\newcommand{\equationnames}{Equations}
+%\newcommand{\eqnname}{Equation}
+%\newcommand{\eqnnames}{Equations}
+\newcommand{\eqnname}{Eq.}
+\newcommand{\eqnnames}{Eqs.}
+
+
+\begin{document}
+
+\title{Introduction to the\\Monterey-Newport Parabolic Equation (MNPE)\\Model}
+\author[1]{Kevin B. Smith}
+\author[2]{Thomas J. Deal}
+\affil[1]{Naval Postgraduate School, Monterey, CA}
+\affil[2]{Naval Undersea Warfare Center, Newport, RI}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+The Monterey-Newport Parabolic Equation (MNPE) model calculates pressure and acoustic particle velocity for underwater sources in range-dependent oceans using a split-step Fourier method of solving the parabolic wave equation. This document provides an introduction to version 1.0 of the broadband, two-dimensional MNPE model (MNPE2D). It describes the steps required to build the executable from source code, generate the input files, run the model, and read the outputs. It also includes example outputs the user can re-create to verify the model is running correctly on their system.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+\listoftables
+\listoffigures
+
+\include{Introduction}
+\include{Building}
+\include{InputData}
+\include{Running}
+
+\appendix 
+\renewcommand\thefigure{\thesection.\arabic{figure}}  
+\renewcommand\theequation{\thesection.\arabic{equation}}  
+\numberwithin{equation}{section}
+
+\include{Dipole}
+\include{RoughSurface}
+
+\newpage
+\bibliographystyle{ieeetr}
+\bibliography{MNPEintro}
+
+\end{document}
