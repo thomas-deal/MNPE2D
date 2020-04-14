@@ -36,7 +36,7 @@ alpha1 = ConvertAttenuationUnits(alphaf,'dB/m/kHz','dB/lambda',f,c1);
 [B.TLp, B.TLvz, B.r, B.z] = ModeTLwithLoss(f,zs,H,c,rho,c1,rho1,alphaf,Rmax);
 B.surf = zeros(1,length(B.r));
 B.bathy = H*ones(1,length(B.r));
-%% Run M3PE2D
+%% Run Matlab MNPE2D
 test_mnpe2d
 M.TLp = TLp;
 M.TLvz = TLvz;
@@ -44,8 +44,8 @@ M.r = r;
 M.z = z;
 M.surf = surf;
 M.bathy = bathy;
-%% Run MMPE2D
-% Write temporary file to answer MMPE command line prompt for accuracy/efficiency
+%% Run MNPE2D
+% Write temporary file to answer MNPE command line prompt for accuracy/efficiency
 PromptFile='tmp.txt';fid=fopen(PromptFile,'w');fprintf(fid,'1\n');fclose(fid);
 system([fullfile(BINPath,'MNPE2D') ' < ' PromptFile]);
 delete(PromptFile);
