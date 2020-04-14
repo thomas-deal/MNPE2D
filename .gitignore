@@ -1,0 +1,23 @@
+# MacOS Files
+.DS_Store
+
+# Latex Files
+/doc/tex/*
+!/doc/tex/*.tex
+!/doc/tex/*.bib
+!/doc/tex/*.m
+/doc/images/*converted-to.pdf
+
+# Autosave files
+*~
+*.*~
+
+# Compiled files
+/bin/*
+!/bin/*.m
+
+# MNPE files
+/examples/**/*.bin
+/examples/**/*.log
+/benchmark/*.bin
+/benchmark/*.log

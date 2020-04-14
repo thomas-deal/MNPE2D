@@ -1,0 +1,45 @@
+Instructions for building MNPE2D on Windows 10
+
+The following assumes the user is developing code in the folder C:\dev, but any folder can be chosen.
+
+1) Get MNPE source code.
+
+Option A) Click the download link at https://gitlab.nps.edu/kbsmith/mnpe2d, select .zip, download the file, copy it to C:\dev, and unzip. 
+
+Option B) Install git from https://git-scm.com/download/win Then open a cmd.exe command window and type 
+
+cd C:\dev
+git clone https://gitlab.nps.edu/kbsmith/mnpe2d.git MNPE2D
+
+At the end of this step you should have a folder C:\dev\MNPE2D
+
+2) Install CMake
+
+Download latest version from https://cmake.org/download/ Click the .msi link next to "Windows win64-x64 Installer" to run the installation program.
+
+3) Install MinGW
+
+Go to https://osdn.net/projects/mingw/releases/ Click the button to download mingw-get-setup.exe Choose C:\MinGW\ for the installation directory. When the MinGW Installation Manager comes up, select "Basic Setup" in the left-hand pane, then in the upper-right pane, check the boxes for 
+
+mingw-developer-toolkit-bin
+mingw32-base-bin
+mingw32-gcc-fortran-bin
+mingw32-gcc-c++-bin 
+msys-base-bin
+
+Then on the menu bar select Installation->Apply Changes
+
+4) Build MNPE2D
+
+Run the MSYS shell from C:\MinGW\msys\1.0\msys.bat and in its window type
+
+cd C:/dev/MNPE2D/bin (notice that the MSYS shell uses forward slashes)
+cmake -G"MSYS Makefiles" ../src
+make
+
+You will now have MNPE2D.exe in the bin\ folder. Test it by typing
+
+cd ../benchmark
+../bin/MNPE2D
+
+MNPE2D.exe can now be executed from a regular cmd.exe command window or by double-clicking in the Windows explorer.
