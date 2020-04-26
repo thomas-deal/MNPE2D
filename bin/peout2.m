@@ -1307,15 +1307,18 @@ else
     r0=1.;
     press=psi*sqrt(r0/max(1000.*rngout,r0));
 
-    hanwinf=hanning(nf+1);
-    hanwinf=fftshift(hanwinf(1:nf)/sum(hanwinf(1:nf)));
+    hanwinf=hanning(nf,'periodic');
+    hanwinf=fftshift(hanwinf);
+%   *nf factor to account for ifft scaling and 1/sum(hanwinf) for proper
+%   scaling
+    hanwinf=hanwinf*nf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
 
     if optt1 == 1
 
 % Convert to time domain, re-order times and correct for basebanded phase
       for iz=1:nzout
-        press(iz,:)=fftshift(fft(press(iz,:).*hanwinf')).*exp(-1i*phs);
+        press(iz,:)=fftshift(ifft(press(iz,:).*hanwinf')).*exp(-1i*phs);
       end
       timeout=time+rngout/(c0/1000.);
 
@@ -1409,8 +1412,8 @@ else
       
       kvsfreq=zeros(mzt,nf);
 
-      hanwinz=hanning(mzt+1);
-      hanwinz=hanwinz(1:mzt)/sum(hanwinz(1:mzt));
+      hanwinz=hanning(mzt,'periodic');
+      hanwinz=hanwinz/sum(hanwinz);
       theta=(-90:0.5:90)*pi/180;
       angvsfreq=zeros(length(theta),nf);
       
@@ -1449,7 +1452,7 @@ else
 
 %  Transform to time domain
       for m=1:length(theta)
-        pressbeam(m,:)=fftshift(fft(angvsfreq(m,:).*hanwinf')).*exp(-1i*phs);
+        pressbeam(m,:)=fftshift(ifft(angvsfreq(m,:).*hanwinf')).*exp(-1i*phs);
       end
 
       clear delz idx_strt idx_end nzbeam pow_z mzt hanwinz hanwinf
@@ -1668,12 +1671,15 @@ else
     end  % end of 'if optout == 1'
     
 % Convert to time domain, re-order freqs and correct for basebanded phase
-    hanwin=hanning(nf+1);
-    hanwin=fftshift(hanwin(1:nf)/sum(hanwin(1:nf)));
+    hanwinf=hanning(nf,'periodic');
+    hanwinf=fftshift(hanwinf);
+%   *nf factor to account for ifft scaling and 1/sum(hanwinf) for proper
+%   scaling
+    hanwinf=hanwinf*nf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
-        pressd(irng,:)=fftshift(fft(pressd(irng,:).*hanwin')).*exp(-1i*phs);
+        pressd(irng,:)=fftshift(ifft(pressd(irng,:).*hanwinf')).*exp(-1i*phs);
         timeout(irng,:)=time+rngout(1,irng)/(c0/1000.);
       end
       
@@ -1685,7 +1691,7 @@ else
       tmp=pressd(nrad/2+2:nrad,:);pressd(nrad/2:nrad,:)=pressd(1:nrad/2+1,:);pressd(1:nrad/2-1,:)=tmp;
       if optt1 == 1
         for irad=1:nrad
-          pressd(irad,:)=fftshift(fft(pressd(irad,:).*hanwin')).*exp(-1i*phs);
+          pressd(irad,:)=fftshift(ifft(pressd(irad,:).*hanwinf')).*exp(-1i*phs);
         end
         tlpressd=-20*log10(max(abs(pressd),1.e-20));
         tlmin=min(min(tlpressd));tlmax=tlmin+100;
@@ -1734,23 +1740,25 @@ else
         nbeam=mt;
         idx_strt=nel/2-nbeam/2+1;idx_end=nbeam+idx_strt-1;
       
-        hanwinf=hanning(nf+1);
-        hanwinf=fftshift(hanwinf(1:nf)/sum(hanwinf(1:nf)));
+    hanwinf=hanning(nf,'periodic');
+    hanwinf=fftshift(hanwinf);
+%   *nf factor to account for ifft scaling and 1/sum(hanwinf) for proper
+%   scaling
+    hanwinf=hanwinf*nf/sum(hanwinf); 
       
 %         xvsfreq=zeros(mt,nf);
         xvsfreq=pressd(idx_strt:idx_end,:);
       
         kvsfreq=zeros(mt,nf);
 
-        hanwinx=hanning(mt+1);
-        hanwinx=hanwinx(1:mt)/sum(hanwinx(1:mt));
+        hanwinx=hanning(mt,'periodic');
+        hanwinx=hanwinx/sum(hanwinx);
         theta=(-90:0.5:90)*pi/180;
         angvsfreq=zeros(length(theta),nf);
         freq=fftshift(freq);
 
         for n=1:nf
           kvsfreq(:,n)=fft(fftshift(xvsfreq(:,n).*hanwinx));
-%          kvsfreq(:,n)=fft(xvsfreq(:,n).*fftshift(hanwinx));
 %  Transform K --> angle
           kx=mt*del*freq(n)*sin(theta)/c0;
           posk=find(kx>=0);
@@ -1783,7 +1791,7 @@ else
 
 %  Transform to time domain
         for m=1:length(theta)
-          pressbeam(m,:)=fftshift(fft(angvsfreq(m,:).*hanwinf'));
+          pressbeam(m,:)=fftshift(ifft(angvsfreq(m,:).*hanwinf'));
         end
 
         theta=theta*180/pi;
@@ -2055,17 +2063,20 @@ else
     end
 
 % Convert to time domain, re-order freqs and correct for basebanded phase
-    hanwin=hanning(nf+1);
-    hanwin=fftshift(hanwin(1:nf)/sum(hanwin(1:nf)));
+    hanwinf=hanning(nf,'periodic');
+    hanwinf=fftshift(hanwinf);
+%   *nf factor to account for ifft scaling and 1/sum(hanwinf) for proper
+%   scaling
+    hanwinf=hanwinf*nf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
-        pressd(irng,:)=fftshift(fft(pressd(irng,:).*hanwin')).*exp(-1i*phs);
+        pressd(irng,:)=fftshift(ifft(pressd(irng,:).*hanwinf')).*exp(-1i*phs);
         timeout(irng,:)=time+rngout(1,irng)/(c0/1000.);
       end
     else
       for irad=1:nrad
-        pressd(irad,:)=fftshift(fft(pressd(irad,:).*hanwin')).*exp(-1i*phs);
+        pressd(irad,:)=fftshift(ifft(pressd(irad,:).*hanwinf')).*exp(-1i*phs);
       end
       tmp=pressd(nrad/2+2:nrad,:);
       pressd(nrad/2:nrad,:)=pressd(1:nrad/2+1,:);pressd(1:nrad/2-1,:)=tmp;
