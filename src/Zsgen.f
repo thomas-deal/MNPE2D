@@ -21,7 +21,8 @@ C
 C     Constants/Ranges
       nrng=rngmax/dr+1
       lnr=int(alog(float(nrng))/alog(2.)+0.99)
-      if(lnr.gt.13)print*,'ERROR: lnr > 13'
+      if(lnr.gt.13)print*,'WARNING: lnr > 13'
+	  lnr=min(lnr,13)
       nrng=2.**lnr
       rngmax2=(nrng-1)*dr
 
