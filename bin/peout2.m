@@ -1308,9 +1308,8 @@ else
     press=psi*sqrt(r0/max(1000.*rngout,r0));
 
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf);
+    hanwinf=fftshift(hanwinf)/sum(hanwinf);
 %   1/sum(hanwinf) for proper scaling
-    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
 
     if optt1 == 1
@@ -1671,9 +1670,8 @@ else
     
 % Convert to time domain, re-order freqs and correct for basebanded phase
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf);
+    hanwinf=fftshift(hanwinf)/sum(hanwinf);
 %   1/sum(hanwinf) for proper scaling
-    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
@@ -1739,10 +1737,8 @@ else
         idx_strt=nel/2-nbeam/2+1;idx_end=nbeam+idx_strt-1;
       
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf);
-%   *nf factor to account for ifft scaling and 1/sum(hanwinf) for proper
-%   scaling
-    hanwinf=hanwinf*nf/sum(hanwinf); 
+    hanwinf=fftshift(hanwinf)/sum(hanwinf);
+%   1/sum(hanwinf) for proper scaling
       
 %         xvsfreq=zeros(mt,nf);
         xvsfreq=pressd(idx_strt:idx_end,:);
@@ -2062,9 +2058,8 @@ else
 
 % Convert to time domain, re-order freqs and correct for basebanded phase
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf);
+    hanwinf=fftshift(hanwinf)/sum(hanwinf);
 %   1/sum(hanwinf) for proper scaling
-    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
