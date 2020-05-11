@@ -49,6 +49,7 @@ if opt1 == 1
 
 % Skip consists of size of data set for each freq except starting field, i.e.
 % (number of radials)*(number of ranges)*(number of depths)
+  psi0=zeros(nzout,nf);
   skip=recl*nrad*nrout;
   for ifreq=1:nf
     data=fread(fid,2*nzout,'float32');
@@ -209,6 +210,8 @@ if opt1 == 2
 
   if nrout > 1
     skip=recl*(nrad-1);
+    psi=zeros(nzout,nrout);
+    press=zeros(size(psi));
     for irng=1:nrout
       data=fread(fid,2*nzout,'float32');
       if irng < nrout && nrad > 1
@@ -224,6 +227,8 @@ if opt1 == 2
     end
   else
     skip=recl*nrad*nrout;
+    psi=zeros(nzout,nf);    
+    press=zeros(size(psi));
     for ifreq=1:nf
       data=fread(fid,2*nzout,'float32');
       if ifreq < nf
@@ -443,6 +448,8 @@ if opt1 == 3
     fseek(fid,(header+skip)*4,0);
 
     skip=0; % don't need to use it since reading consecutive radials
+    psi=zeros(nzout,nrad);
+    press=zeros(size(psi));
     for irad=1:nrad
       data=fread(fid,2*nzout,'float32');
       psi(:,irad)=data(1:2:2*nzout-1,1)+1i*data(2:2:2*nzout,1);
@@ -462,6 +469,8 @@ if opt1 == 3
     fseek(fid,(header+skip)*4,0);
     
     skip=recl*nrad*nrout;
+    psi=zeros(nzout,nf);
+    press=zeros(size(psi));
     for ifreq=1:nf
       data=fread(fid,2*nzout,'float32');
       if ifreq < nf
@@ -673,6 +682,8 @@ if opt1 == 4
     fseek(fid,(header+skip)*4,0);
 
     skip=0; % don't need to use it since reading consecutive radials
+    psid=zeros(nrout,nrad);
+    pressd=zeros(size(psid));
     for irng=1:nrout
       for irad=1:nrad
         data=fread(fid,2*nzout,'float32');
@@ -773,6 +784,8 @@ if opt1 == 4
     fid=fopen(pefile,'r');
     fseek(fid,(header+skip)*4,0);
 
+    psid=zeros(nrout,nf);
+    pressd=zeros(size(psid));
     for ifreq=1:nf
       for irng=1:nrout
         data=fread(fid,2*nzout,'float32');
@@ -981,6 +994,8 @@ if opt1 == 5
     fseek(fid,(header+skip)*4,0);
 
     skip=0; % don't need to use it since reading consecutive radials
+    psid=zeros(nrout,nrad);
+    pressd=zeros(size(psid));
     for irng=1:nrout
       for irad=1:nrad
         data=fread(fid,2*nzout,'float32');
@@ -1080,6 +1095,8 @@ if opt1 == 5
     skip=recl + recl*(nradout-1);
     fid=fopen(pefile,'r');
     fseek(fid,(header+skip)*4,0);
+    psid=zeros(nrout,nf);
+    pressd=zeros(size(psid));
 
     for ifreq=1:nf
       for irng=1:nrout
@@ -1277,6 +1294,9 @@ else
     fseek(fid,(header+skip)*4,0);
 
     skip=recl+recl*(nrad*nrout-1);
+    psi=zeros(nzout,nf);
+%    press=zeros(size(psi)); % not needed because later assignment not
+%    looped, but direct rescaling of psi
     for ifreq=1:nf
       data=fread(fid,2*nzout,'float32');
       if ifreq < nf
@@ -1308,8 +1328,9 @@ else
     press=psi*sqrt(r0/max(1000.*rngout,r0));
 
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf)/sum(hanwinf);
+    hanwinf=fftshift(hanwinf);
 %   1/sum(hanwinf) for proper scaling
+    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
 
     if optt1 == 1
@@ -1607,6 +1628,8 @@ else
         fseek(fid,(header+skip)*4,0);
 
         skip=recl*(nrad-1);
+        psid=zeros(nrout,nf);
+        pressd=zeros(size(psid));
         for irng=1:nrout
           data=fread(fid,2*nzout,'float32');
           if irng < nrout && nrad > 1
@@ -1626,6 +1649,8 @@ else
         fseek(fid,(header+skip)*4,0);
 
         skip=0; % don't need to use it since reading consecutive radials
+        psid=zeros(nrad,nf);
+        pressd=zeros(size(psid));
         for irad=1:nrad
           data=fread(fid,2*nzout,'float32');
           psi=data(1:2:2*nzout-1,1)+1i*data(2:2:2*nzout,1);
@@ -1670,8 +1695,9 @@ else
     
 % Convert to time domain, re-order freqs and correct for basebanded phase
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf)/sum(hanwinf);
+    hanwinf=fftshift(hanwinf);
 %   1/sum(hanwinf) for proper scaling
+    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
@@ -1737,8 +1763,9 @@ else
         idx_strt=nel/2-nbeam/2+1;idx_end=nbeam+idx_strt-1;
       
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf)/sum(hanwinf);
+    hanwinf=fftshift(hanwinf);
 %   1/sum(hanwinf) for proper scaling
+    hanwinf=hanwinf/sum(hanwinf); 
       
 %         xvsfreq=zeros(mt,nf);
         xvsfreq=pressd(idx_strt:idx_end,:);
@@ -2003,6 +2030,8 @@ else
         fseek(fid,(header+skip)*4,0);
 
         skip=recl*(nrad-1);
+        psid=zeros(nrout,nf);
+        pressd=zeros(size(psid));
         for irng=1:nrout
           data=fread(fid,2*nzout,'float32');
           if irng < nrout && nrad > 1
@@ -2022,6 +2051,8 @@ else
         fseek(fid,(header+skip)*4,0);
 
         skip=0; % don't need to use it since reading consecutive radials
+        psid=zeros(nrad,nf);
+        pressd=zeros(size(psid));
         for irad=1:nrad
           data=fread(fid,2*nzout,'float32');
           psi=data(1:2:2*nzout-1,1)+1i*data(2:2:2*nzout,1);
@@ -2058,8 +2089,9 @@ else
 
 % Convert to time domain, re-order freqs and correct for basebanded phase
     hanwinf=hanning(nf,'periodic');
-    hanwinf=fftshift(hanwinf)/sum(hanwinf);
+    hanwinf=fftshift(hanwinf);
 %   1/sum(hanwinf) for proper scaling
+    hanwinf=hanwinf/sum(hanwinf); 
     phs=2*pi*cfreq*time;
     if optout == 1
       for irng=1:nrout
