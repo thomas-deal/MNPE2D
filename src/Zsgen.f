@@ -113,8 +113,7 @@ C Case 0: Flat Surface
       end if
 
 C Read random number generator seed and time for all other surface types
-      read(15,*)seed,surftime
-      read(15,*)wvdir
+      read(15,*)seed,surftime,wvdir
       write(9,*)'Random Seed = ',seed
       write(9,*)'Time Offset = ',surftime
       write(9,*)'Direction = ',wvdir
