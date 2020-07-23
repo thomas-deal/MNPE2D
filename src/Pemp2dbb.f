@@ -26,7 +26,7 @@ C  where envprop2=envprop(dr/2) and phsprop are the wide-angle PE propagators.
       COMMON nz,dz,dk,dr,rng,freq,c0,sd,arl,thc,depcalc,bdint,dbdint,
      &irad,nrad,drad,rngmax,rsint,rsdotint,Hdep
 
-      open(9,file='mmpe2d.log',status='unknown')
+      open(9,file='mnpe2d.log',status='unknown')
 C11    format(1x,'START DATE : ',i2,'/',i2,'/',i4)
 C12    format(1x,'START TIME : ',i2,':',i2,':',i2,'.',i2)
 C13    format(1x,'STOP DATE : ',i2,'/',i2,'/',i4)
