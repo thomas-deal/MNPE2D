@@ -3,7 +3,7 @@ if ~exist('scriptedinput','var')
 end
 
 if ~exist('pefile','var')
-    pefile=input('Enter name of binary MMPE output file: ','s');
+    pefile=input('Enter name of binary MNPE output file: ','s');
 else
     disp(pefile)
 end
